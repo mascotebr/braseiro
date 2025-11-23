@@ -26,5 +26,8 @@
     "prettier": "^2.8.8",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "jest": "^29.6.2"
   }
 }
