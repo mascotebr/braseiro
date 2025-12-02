@@ -1,0 +1,9 @@
+CREATE TABLE imagens (
+  id SERIAL PRIMARY KEY,
+  id_autor INTEGER NULL,
+  FOREIGN KEY (id_autor) REFERENCES autores(id),
+  src VARCHAR(1000) NOT NULL,
+  public_id VARCHAR(255) NOT NULL,
+  tipo VARCHAR(20) NOT NULL,
+  data_cadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+ );
