@@ -1,11 +1,11 @@
 import { Pool } from 'pg'
 
-async function query(queryObject, values) {
+async function query(queryObject) {
   let client
   client = await getNewClient()
 
   try {
-    const result = await client.query(queryObject, values ?? [])
+    const result = await client.query(queryObject)
     return result
   } catch (error) {
   } finally {
