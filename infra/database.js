@@ -1,20 +1,22 @@
-import { Pool } from 'pg'
+import { Client } from 'pg'
 
 async function query(queryObject) {
-  let client
-  client = await getNewClient()
-
+  let client = null
   try {
+    client = await getNewClient()
+    await client.connect()
     const result = await client.query(queryObject)
     return result
   } catch (error) {
+    console.error(error)
+    throw error
   } finally {
-    await client.release()
+    if (client != null) await client.end()
   }
 }
 
 async function getNewClient() {
-  let pool = new Pool({
+  let client = new Client({
     host: process.env.POSTGRES_HOST,
     port: process.env.POSTGRES_PORT,
     user: process.env.POSTGRES_USER,
@@ -22,7 +24,6 @@ async function getNewClient() {
     password: process.env.POSTGRES_PASSWORD,
     ssl: getSSLValues(),
   })
-  const client = await pool.connect()
   return client
 }
 
