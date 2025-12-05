@@ -8,7 +8,9 @@
     "lint:check": "prettier --check .",
     "lint:fix": "prettier --write .",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "migration:create": "node-pg-migrate -m infra/migrations create",
+    "migration:up": "node-pg-migrate -m infra/migrations --envPath .env.development up"
   },
   "bugs": {
     "url": "https://github.com/mascotebr/braseiro/issues"
@@ -19,10 +21,11 @@
   },
   "license": "MIT",
   "author": "Mascotebr",
-  "type": "module",
   "main": "pages/index.js",
   "dependencies": {
+    "cloudinary": "^2.8.0",
     "next": "^16.0.3",
+    "node-pg-migrate": "^6.2.2",
     "pg": "^8.16.3",
     "prettier": "^2.8.8",
     "react": "^19.2.0",

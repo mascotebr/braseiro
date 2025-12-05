@@ -6,7 +6,6 @@ export default createApiRoute({
     const result = await database.query({
       text: 'SELECT * FROM autores WHERE ativo = true;',
     })
-    console.log(result)
     const autores = result.rows
     res.status(200).json(autores)
   },
