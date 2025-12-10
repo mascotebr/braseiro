@@ -1,17 +1,16 @@
 import { Client } from 'pg'
 
 async function query(queryObject) {
-  let client = null
+  let client
   try {
     client = await getNewClient()
-    await client.connect()
     const result = await client.query(queryObject)
     return result
   } catch (error) {
     console.error(error)
     throw error
   } finally {
-    if (client != null) await client.end()
+    if (client) await client.end()
   }
 }
 
@@ -24,6 +23,7 @@ async function getNewClient() {
     password: process.env.POSTGRES_PASSWORD,
     ssl: getSSLValues(),
   })
+  await client.connect()
   return client
 }
 
@@ -32,9 +32,7 @@ function getSSLValues() {
   return true
 }
 
-const database = {
-  query: query,
-  getNewClient: getNewClient,
+export default {
+  query,
+  getNewClient,
 }
-
-export default database
