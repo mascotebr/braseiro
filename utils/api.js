@@ -14,4 +14,9 @@ async function get(url) {
   return await fetch(`${baseUrl}${url}`)
 }
 
-export { createApiRoute, get }
+async function post(url, body) {
+  const baseUrl = process.env.BASE_URL_API
+  return await fetch(`${baseUrl}${url}`, { method: 'POST' })
+}
+
+export { createApiRoute, get, post }

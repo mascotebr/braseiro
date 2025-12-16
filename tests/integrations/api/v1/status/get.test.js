@@ -1,5 +1,6 @@
+import { get } from 'utils/api'
 test('Espera o Status do banco de dados', async () => {
-  const response = await fetch('http://localhost:3000/api/v1/status/')
+  const response = await get('status')
   expect(response.status).toBe(200)
 
   const responseBody = await response.json()
