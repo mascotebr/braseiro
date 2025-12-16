@@ -22,7 +22,7 @@ async function post(url, body) {
 async function apiFunction(req, res, methods) {
   //Se o metodo não for declarado volta 405
   if (!Object.keys(methods).includes(req.method)) {
-    return res.status(405).end()
+    return res.status(405).json({ error: `Method "${req.method}" not allowed` })
   }
   let configParams
   if (Object.keys(methods).includes('CONFIG')) {

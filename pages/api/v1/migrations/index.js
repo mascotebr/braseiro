@@ -22,9 +22,9 @@ export default async function (req, res) {
       }
     },
 
-    // async DISMISS({ dbClient }) {
-    //   await dbClient.end()
-    // },
+    async DISMISS({ dbClient }) {
+      await dbClient.end()
+    },
 
     async GET({ defaultMigrationOption }) {
       const pendingMigrations = await migrationRunner(defaultMigrationOption)
