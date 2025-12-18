@@ -1,35 +1,46 @@
 import migrationRunner from 'node-pg-migrate'
 import { join } from 'node:path'
 import database from 'infra/database'
-export default async function migrations(req, res) {
-  const dbClient = await database.getNewClient()
+import { apiFunction } from 'utils/api'
 
-  const defaultMigrationOption = {
-    dbClient: dbClient,
-    dryRun: false,
-    dir: join('infra', 'migrations'),
-    direction: 'up',
-    verbose: true,
-    migrationsTable: 'pgmigrations',
-  }
-  if (req.method == 'GET') {
-    const pendingMigrations = await migrationRunner(defaultMigrationOption)
-    await dbClient.end()
-    return res.status(200).json(pendingMigrations)
-  }
+export default async function (req, res) {
+  apiFunction(req, res, {
+    async CONFIG() {
+      const dbClient = await database.getNewClient()
+      const defaultMigrationOption = {
+        dbClient: dbClient,
+        dryRun: false,
+        dir: join('infra', 'migrations'),
+        direction: 'up',
+        verbose: true,
+        migrationsTable: 'pgmigrations',
+      }
 
-  if (req.method == 'POST') {
-    const migratedMigrations = await migrationRunner({
-      ...defaultMigrationOption,
-      dryRun: false,
-    })
-    await dbClient.end()
+      return {
+        defaultMigrationOption: defaultMigrationOption,
+        dbClient: dbClient,
+      }
+    },
 
-    if (migratedMigrations.length > 0) {
-      return res.status(201).json(migratedMigrations)
-    }
-    return res.status(200).json(migratedMigrations)
-  }
+    async DISMISS({ dbClient }) {
+      await dbClient.end()
+    },
 
-  return res.status(405).end()
+    async GET({ defaultMigrationOption }) {
+      const pendingMigrations = await migrationRunner(defaultMigrationOption)
+      return res.status(200).json(pendingMigrations)
+    },
+
+    async POST({ defaultMigrationOption }) {
+      const migratedMigrations = await migrationRunner({
+        ...defaultMigrationOption,
+        dryRun: false,
+      })
+
+      if (migratedMigrations.length > 0) {
+        return res.status(201).json(migratedMigrations)
+      }
+      return res.status(200).json(migratedMigrations)
+    },
+  })
 }
