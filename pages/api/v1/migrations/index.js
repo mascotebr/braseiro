@@ -9,7 +9,7 @@ export default async function (req, res) {
       const dbClient = await database.getNewClient()
       const defaultMigrationOption = {
         dbClient: dbClient,
-        dryRun: false,
+        dryRun: true,
         dir: join('infra', 'migrations'),
         direction: 'up',
         verbose: true,
