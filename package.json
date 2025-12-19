@@ -2,22 +2,15 @@
   "name": "braseiro",
   "version": "1.0.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start -p 5000",
+    "dev": "npm run services:up && npm run wait-for-postgres && npm run migration:up && next dev",
+    "services:up": "",
     "lint:check": "prettier --check .",
     "lint:fix": "prettier --write .",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand",
     "migration:create": "node-pg-migrate -m infra/migrations create",
-    "migration:up": "node-pg-migrate -m infra/migrations --envPath .env.development up"
-  },
-  "bugs": {
-    "url": "https://github.com/mascotebr/braseiro/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mascotebr/braseiro.git"
+    "migration:up": "node-pg-migrate -m infra/migrations --envPath .env.development up",
+    "wait-for-postgres": "node infra/scripts/wait-for-postgres.js"
   },
   "license": "MIT",
   "author": "Mascotebr",
