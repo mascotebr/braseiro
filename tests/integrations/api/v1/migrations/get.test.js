@@ -1,11 +1,10 @@
 import { get } from 'utils/api.js'
 import database from 'infra/database.js'
-
-beforeAll(cleanDatabase)
-
-async function cleanDatabase() {
+import orchastrador from 'tests/orchastrador.js'
+beforeAll(async () => {
+  await orchastrador.waitForAllServices()
   await database.query('drop schema public cascade; create schema public; ')
-}
+})
 
 test('Espera as Migrations não executadas', async () => {
   const response = await get('migrations')
