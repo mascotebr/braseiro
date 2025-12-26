@@ -1,4 +1,10 @@
 import { get } from 'utils/api'
+import orchastrador from 'tests/orchastrador.js'
+
+beforeAll(async () => {
+  await orchastrador.waitForAllServices()
+})
+
 test('Espera o Status do banco de dados', async () => {
   const response = await get('status')
   expect(response.status).toBe(200)
