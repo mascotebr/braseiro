@@ -4,7 +4,9 @@
   "scripts": {
     "dev:old": "npm run migration:up && next dev",
     "dev": "npm run services:up && npm run wait-for-postgres && npm run migration:up && next dev",
-    "services:up": "",
+    "services:up": "docker compose -f infra/compose.yaml up -d",
+    "services:stop": "docker compose -f infra/compose.yaml stop",
+    "services:down": "docker compose -f infra/compose.yaml down",
     "lint:check": "prettier --check .",
     "lint:fix": "prettier --write .",
     "test:old": "concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand\"",
