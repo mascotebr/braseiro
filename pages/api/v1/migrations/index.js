@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import database from 'infra/database'
 import { apiFunction } from 'utils/api'
 
-export default async function (req, res) {
+export default async function Migrations(req, res) {
   apiFunction(req, res, {
     async CONFIG() {
       const dbClient = await database.getNewClient()
