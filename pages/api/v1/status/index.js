@@ -1,6 +1,6 @@
 import database from 'infra/database'
 import { apiFunction } from 'utils/api'
-export default async function (req, res) {
+export default async function Status(req, res) {
   apiFunction(req, res, {
     async GET() {
       const updateAt = new Date().toISOString()
