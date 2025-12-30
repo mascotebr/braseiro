@@ -24,19 +24,19 @@ async function apiFunction(req, res, methods) {
   if (!Object.keys(methods).includes(req.method)) {
     return res.status(405).json({ error: `Method "${req.method}" not allowed` })
   }
-  let configParams
-  if (Object.keys(methods).includes('CONFIG')) {
-    configParams = await methods['CONFIG']()
+  let prepareParams
+  if (Object.keys(methods).includes('PREPARE')) {
+    prepareParams = await methods['PREPARE']()
   }
 
   try {
-    await methods[req.method](configParams)
+    await methods[req.method](prepareParams)
   } catch (error) {
     console.log(error)
     return error
   } finally {
     if (Object.keys(methods).includes('DISMISS')) {
-      await methods['DISMISS'](configParams)
+      await methods['DISMISS'](prepareParams)
     }
   }
 }
