@@ -5,7 +5,7 @@ import { apiFunction } from 'utils/api'
 
 export default async function Migrations(req, res) {
   apiFunction(req, res, {
-    async CONFIG() {
+    async PREPARE() {
       const dbClient = await database.getNewClient()
       const defaultMigrationOption = {
         dbClient: dbClient,

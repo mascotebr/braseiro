@@ -1,15 +1,18 @@
 import { get } from 'utils/api.js'
-import database from 'infra/database.js'
 import orchastrador from 'tests/orchastrador.js'
 beforeAll(async () => {
   await orchastrador.waitForAllServices()
-  await database.query('drop schema public cascade; create schema public; ')
+  await orchastrador.clearDatabase()
 })
 
-test('Espera as Migrations não executadas', async () => {
-  const response = await get('migrations')
-  expect(response.status).toBe(200)
-  const responseBody = await response.json()
-  expect(Array.isArray(responseBody)).toBe(true)
-  expect(responseBody.length).toBeGreaterThan(0)
+describe('GET /api/v1/status', () => {
+  describe('Anonymous user', () => {
+    test('Retrieving pending migrations', async () => {
+      const response = await get('migrations')
+      expect(response.status).toBe(200)
+      const responseBody = await response.json()
+      expect(Array.isArray(responseBody)).toBe(true)
+      expect(responseBody.length).toBeGreaterThan(0)
+    })
+  })
 })
