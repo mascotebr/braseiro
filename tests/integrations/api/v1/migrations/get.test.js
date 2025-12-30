@@ -6,10 +6,14 @@ beforeAll(async () => {
   await database.query('drop schema public cascade; create schema public; ')
 })
 
-test('Espera as Migrations não executadas', async () => {
-  const response = await get('migrations')
-  expect(response.status).toBe(200)
-  const responseBody = await response.json()
-  expect(Array.isArray(responseBody)).toBe(true)
-  expect(responseBody.length).toBeGreaterThan(0)
+describe('GET /api/v1/status', () => {
+  describe('Anonymous user', () => {
+    test('Running pending migrations', async () => {
+      const response = await get('migrations')
+      expect(response.status).toBe(200)
+      const responseBody = await response.json()
+      expect(Array.isArray(responseBody)).toBe(true)
+      expect(responseBody.length).toBeGreaterThan(0)
+    })
+  })
 })
