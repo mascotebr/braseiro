@@ -10,8 +10,12 @@ export default function StatusPage() {
   )
 }
 
+async function getStatus(key) {
+  const response = await get(key)
+  return await response.json()
+}
 function UpdateAt() {
-  const { isLoading, data } = useSWR('/api/v1/status', get, {
+  const { isLoading, data } = useSWR('/api/v1/status', getStatus, {
     refreshInterval: 2000,
   })
 
@@ -25,7 +29,7 @@ function UpdateAt() {
 }
 
 function DatabaseStatus() {
-  const { isLoading, data } = useSWR('/api/v1/status', get, {
+  const { isLoading, data } = useSWR('/api/v1/status', getStatus, {
     refreshInterval: 2000,
   })
 
@@ -37,12 +41,11 @@ function DatabaseStatus() {
 
   return (
     <>
-      <b>Database Status</b>
-      <ul>
-        <li>Versão: {database.version}</li>
-        <li>Maximo de conexões: {database.max_connections}</li>
-        <li>Conexões abertas: {database.opened_connections}</li>
-      </ul>
+      <h1>Database Status</h1>
+
+      <div>Versão: {database.version}</div>
+      <div>Maximo de conexões: {database.max_connections}</div>
+      <div>Conexões abertas: {database.opened_connections}</div>
     </>
   )
 }

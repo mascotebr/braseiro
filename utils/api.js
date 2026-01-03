@@ -1,11 +1,9 @@
 async function get(url) {
-  const response = await fetch(url)
-  return await response.json()
+  return await fetch(url)
 }
 
 async function post(url, body) {
-  const baseUrl = process.env.BASE_URL_API
-  return await fetch(`${baseUrl}${url}`, { method: 'POST', body: body })
+  return await fetch(url, { method: 'POST', body: body })
 }
 
 async function apiFunction(req, res, methods) {
