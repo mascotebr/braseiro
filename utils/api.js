@@ -1,22 +1,9 @@
-function createApiRoute(handlers) {
-  return async (req, res) => {
-    const fn = handlers[req.method]
-    if (!fn) {
-      res.setHeader('Allow', Object.keys(handlers))
-      return res.status(405).end()
-    }
-    return await fn(req, res)
-  }
-}
-
 async function get(url) {
-  const baseUrl = process.env.BASE_URL_API
-  return await fetch(`${baseUrl}${url}`)
+  return await fetch(url)
 }
 
 async function post(url, body) {
-  const baseUrl = process.env.BASE_URL_API
-  return await fetch(`${baseUrl}${url}`, { method: 'POST', body: body })
+  return await fetch(url, { method: 'POST', body: body })
 }
 
 async function apiFunction(req, res, methods) {
@@ -40,4 +27,4 @@ async function apiFunction(req, res, methods) {
     }
   }
 }
-export { createApiRoute, get, post, apiFunction }
+export { get, post, apiFunction }
