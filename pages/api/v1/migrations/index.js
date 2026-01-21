@@ -1,46 +1,58 @@
 import migrationRunner from 'node-pg-migrate'
 import { join } from 'node:path'
 import database from 'infra/database'
-import { apiFunction } from 'utils/api'
+import { errors } from 'utils/api'
+import { createRouter } from 'next-connect'
 
-export default async function Migrations(req, res) {
-  apiFunction(req, res, {
-    async PREPARE() {
-      const dbClient = await database.getNewClient()
-      const defaultMigrationOption = {
-        dbClient: dbClient,
-        dryRun: true,
-        dir: join('infra', 'migrations'),
-        direction: 'up',
-        verbose: true,
-        migrationsTable: 'pgmigrations',
-      }
+const router = createRouter()
 
-      return {
-        defaultMigrationOption: defaultMigrationOption,
-        dbClient: dbClient,
-      }
-    },
+router.get(getHandler)
+router.post(postHandler)
 
-    async DISMISS({ dbClient }) {
-      await dbClient.end()
-    },
+export default router.handler({
+  onNoMatch: errors.onNoMatchHandler,
+  onError: errors.onErrorHandler,
+})
 
-    async GET({ defaultMigrationOption }) {
-      const pendingMigrations = await migrationRunner(defaultMigrationOption)
-      return res.status(200).json(pendingMigrations)
-    },
+async function configHandler() {
+  const dbClient = await database.getNewClient()
+  const defaultMigrationOption = {
+    dbClient: dbClient,
+    dryRun: true,
+    dir: join('infra', 'migrations'),
+    direction: 'up',
+    verbose: true,
+    migrationsTable: 'pgmigrations',
+  }
 
-    async POST({ defaultMigrationOption }) {
-      const migratedMigrations = await migrationRunner({
-        ...defaultMigrationOption,
-        dryRun: false,
-      })
+  return {
+    defaultMigrationOption: defaultMigrationOption,
+    dbClient: dbClient,
+  }
+}
+async function getHandler(req, res) {
+  const { defaultMigrationOption, dbClient } = await configHandler()
+  try {
+    const pendingMigrations = await migrationRunner(defaultMigrationOption)
+    return res.status(200).json(pendingMigrations)
+  } finally {
+    if (dbClient) await dbClient.end()
+  }
+}
 
-      if (migratedMigrations.length > 0) {
-        return res.status(201).json(migratedMigrations)
-      }
-      return res.status(200).json(migratedMigrations)
-    },
-  })
+async function postHandler(req, res) {
+  const { defaultMigrationOption, dbClient } = await configHandler()
+  try {
+    const migratedMigrations = await migrationRunner({
+      ...defaultMigrationOption,
+      dryRun: false,
+    })
+
+    if (migratedMigrations.length > 0) {
+      return res.status(201).json(migratedMigrations)
+    }
+    return res.status(200).json(migratedMigrations)
+  } finally {
+    if (dbClient) await dbClient.end()
+  }
 }
