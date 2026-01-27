@@ -1,4 +1,4 @@
-import { post } from 'utils/api'
+import methods from 'infra/methods'
 import orchastrador from 'tests/orchastrador.js'
 
 beforeAll(async () => {
@@ -8,9 +8,9 @@ beforeAll(async () => {
 describe('POST /api/v1/status', () => {
   describe('Anonymous user', () => {
     test('Retrieving MethodNotAllowedError', async () => {
-      const response = await post('http://localhost:3000/api/v1/status')
+      const response = await methods.post('http://localhost:3000/api/v1/status')
+      console.log(response)
       const data = await response.json()
-      console.log(data)
       expect(data).toEqual({
         name: 'MethodNotAllowedError',
         message: 'Metodo não permitido por esse endpoint.',

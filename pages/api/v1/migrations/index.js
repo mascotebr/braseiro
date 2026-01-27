@@ -1,7 +1,7 @@
 import migrationRunner from 'node-pg-migrate'
 import { join } from 'node:path'
 import database from 'infra/database'
-import { errors } from 'utils/api'
+import controller from 'infra/controller'
 import { createRouter } from 'next-connect'
 
 const router = createRouter()
@@ -9,31 +9,23 @@ const router = createRouter()
 router.get(getHandler)
 router.post(postHandler)
 
-export default router.handler({
-  onNoMatch: errors.onNoMatchHandler,
-  onError: errors.onErrorHandler,
-})
+export default router.handler(controller.errorsHandlers)
 
-async function configHandler() {
-  const dbClient = await database.getNewClient()
-  const defaultMigrationOption = {
-    dbClient: dbClient,
-    dryRun: true,
-    dir: join('infra', 'migrations'),
-    direction: 'up',
-    verbose: true,
-    migrationsTable: 'pgmigrations',
-  }
-
-  return {
-    defaultMigrationOption: defaultMigrationOption,
-    dbClient: dbClient,
-  }
+const defaultMigrationOption = {
+  dryRun: true,
+  dir: join('infra', 'migrations'),
+  direction: 'up',
+  verbose: true,
+  migrationsTable: 'pgmigrations',
 }
+
 async function getHandler(req, res) {
-  const { defaultMigrationOption, dbClient } = await configHandler()
+  const dbClient = await database.getNewClient()
   try {
-    const pendingMigrations = await migrationRunner(defaultMigrationOption)
+    const pendingMigrations = await migrationRunner({
+      ...defaultMigrationOption,
+      dbClient,
+    })
     return res.status(200).json(pendingMigrations)
   } finally {
     if (dbClient) await dbClient.end()
@@ -41,10 +33,11 @@ async function getHandler(req, res) {
 }
 
 async function postHandler(req, res) {
-  const { defaultMigrationOption, dbClient } = await configHandler()
+  const dbClient = await database.getNewClient()
   try {
     const migratedMigrations = await migrationRunner({
       ...defaultMigrationOption,
+      dbClient,
       dryRun: false,
     })
 

@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import { get } from 'utils/api'
+import { get } from 'infra/methods'
 export default function StatusPage() {
   return (
     <>
