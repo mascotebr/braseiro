@@ -2,9 +2,10 @@ import { InternalServerError, MethodNotAllowedError } from 'infra/errors'
 function onErrorHandler(error, req, res) {
   const errorObject = new InternalServerError({
     cause: error,
+    status: error.statusCode,
   })
   console.error(errorObject)
-  res.status(500).json(errorObject)
+  res.status(errorObject.statusCode).json(errorObject)
 }
 
 function onNoMatchHandler(req, res) {
