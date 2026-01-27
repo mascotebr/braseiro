@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import { get } from 'infra/methods'
+import methods from 'infra/methods'
 export default function StatusPage() {
   return (
     <>
@@ -11,7 +11,7 @@ export default function StatusPage() {
 }
 
 async function getStatus(key) {
-  const response = await get(key)
+  const response = await methods.get(key)
   return await response.json()
 }
 function UpdateAt() {
