@@ -2,9 +2,7 @@
   "name": "braseiro",
   "version": "1.0.0",
   "scripts": {
-    "dev:staging": "npm run migrations:up && next dev",
     "dev": "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
-    "test:staging": "concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
     "test": "npm run services:up && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
     "test:watch": "jest --watch --runInBand --verbose",
     "posttest": "npm run services:stop",
@@ -14,7 +12,6 @@
     "services:wait:database": "node infra/scripts/wait-for-postgres.js",
     "migrations:create": "node-pg-migrate -m infra/migrations create",
     "migrations:up": "node-pg-migrate -m infra/migrations --envPath .env.development up",
-    "lint:prettier:check": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
     "lint:eslint:check": "eslint .",
     "prepare": "husky"
