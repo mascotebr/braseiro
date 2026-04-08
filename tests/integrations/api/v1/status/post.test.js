@@ -1,4 +1,3 @@
-import methods from 'infra/methods'
 import orchastrador from 'tests/orchastrador.js'
 
 beforeAll(async () => {
@@ -8,8 +7,7 @@ beforeAll(async () => {
 describe('POST /api/v1/status', () => {
   describe('Anonymous user', () => {
     test('Retrieving MethodNotAllowedError', async () => {
-      const response = await methods.post('http://localhost:3000/api/v1/status')
-      console.log(response)
+      const response = await fetch('http://localhost:3000/api/v1/status',     {method: "POST"})
       const data = await response.json()
       expect(data).toEqual({
         name: 'MethodNotAllowedError',
