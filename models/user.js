@@ -1,5 +1,33 @@
 import database from 'infra/database'
-import { ValidatorError } from 'infra/errors'
+import { NotFoundError, ValidatorError } from 'infra/errors'
+
+async function findOneByUsername(username) {
+  const newUsers = selectOneByUsername(username)
+  return newUsers
+
+  async function selectOneByUsername(username) {
+    const result = await database.query({
+      text: `
+      SELECT
+        * 
+      FROM
+        users
+      WHERE
+        LOWER(username) = LOWER($1)
+      ;`,
+      values: [username],
+    })
+
+    if (result.rowCount == 0) {
+      throw new NotFoundError({
+        message: 'Usuário não encontrado.',
+        action: 'Tente novamente com outro username.',
+      })
+    }
+
+    return result.rows[0]
+  }
+}
 
 async function create(userInputValues) {
   await verifyEmailDuplicated(userInputValues.email)
@@ -71,6 +99,6 @@ async function create(userInputValues) {
   }
 }
 
-const user = { create }
+const user = { create, findOneByUsername }
 
 export default user

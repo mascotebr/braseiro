@@ -1,11 +1,11 @@
 import {
   InternalServerError,
   MethodNotAllowedError,
+  NotFoundError,
   ValidatorError,
 } from 'infra/errors'
 function onErrorHandler(error, req, res) {
-  console.log(error)
-  if (error instanceof ValidatorError) {
+  if (error instanceof ValidatorError || error instanceof NotFoundError) {
     return res.status(error.statusCode).json(error)
   }
 
