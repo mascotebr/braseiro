@@ -1,5 +1,4 @@
 import useSWR from 'swr'
-import methods from 'infra/methods'
 export default function StatusPage() {
   return (
     <>
@@ -11,7 +10,7 @@ export default function StatusPage() {
 }
 
 async function getStatus(key) {
-  const response = await methods.get(key)
+  const response = await fetch(key)
   return await response.json()
 }
 function UpdateAt() {
