@@ -29,7 +29,7 @@ async function runPendingMigrations() {
 const orchastrator = {
   waitForAllServices,
   clearDatabase,
-  runPendingMigrations
+  runPendingMigrations,
 }
 
 export default orchastrator

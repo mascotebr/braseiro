@@ -7,7 +7,9 @@ beforeAll(async () => {
 describe('POST /api/v1/status', () => {
   describe('Anonymous user', () => {
     test('Retrieving MethodNotAllowedError', async () => {
-      const response = await fetch('http://localhost:3000/api/v1/status',     {method: "POST"})
+      const response = await fetch('http://localhost:3000/api/v1/status', {
+        method: 'POST',
+      })
       const data = await response.json()
       expect(data).toEqual({
         name: 'MethodNotAllowedError',

@@ -9,7 +9,7 @@ describe('GET /api/v1/migrations', () => {
       test('For first time', async () => {
         const response = await fetch(
           'http://localhost:3000/api/v1/migrations',
-          {method: "POST"}
+          { method: 'POST' },
         )
         expect(response.status).toBe(201)
         const responseBody = await response.json()
@@ -19,7 +19,7 @@ describe('GET /api/v1/migrations', () => {
       test('For second time', async () => {
         const response = await fetch(
           'http://localhost:3000/api/v1/migrations',
-               {method: "POST"}
+          { method: 'POST' },
         )
         expect(response.status).toBe(200)
         const responseBody = await response.json()
