@@ -1,5 +1,8 @@
 import orchastrador from 'tests/orchastrador.js'
 import { version as uuidVersion } from 'uuid'
+import user from 'models/user'
+import password from 'models/password'
+
 beforeAll(async () => {
   await orchastrador.waitForAllServices()
   await orchastrador.clearDatabase()
@@ -25,7 +28,7 @@ describe('POST /api/v1/users', () => {
         id: responseBody.id,
         username: 'gabrielconti',
         email: 'gabriel@gmail.com',
-        password: 'abc123',
+        password: responseBody.password,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       })
@@ -33,6 +36,21 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.id)).toBe(4)
       expect(Date.parse(responseBody.created_at)).not.toBeNaN()
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN()
+
+      const userInDB = await user.findOneByUsername('gabrielconti')
+
+      const passwordCorrectMatch = await password.compare(
+        'abc123',
+        userInDB.password,
+      )
+
+      const passwordIncorrectMatch = await password.compare(
+        'SenhaErrada',
+        userInDB.password,
+      )
+
+      expect(passwordCorrectMatch).toBe(true)
+      expect(passwordIncorrectMatch).toBe(false)
     })
 
     test("With duplicated 'email'", async () => {

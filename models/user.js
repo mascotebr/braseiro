@@ -1,5 +1,6 @@
 import database from 'infra/database'
 import { NotFoundError, ValidatorError } from 'infra/errors'
+import password from 'models/password'
 
 async function findOneByUsername(username) {
   const newUsers = selectOneByUsername(username)
@@ -32,6 +33,7 @@ async function findOneByUsername(username) {
 async function create(userInputValues) {
   await verifyEmailDuplicated(userInputValues.email)
   await verifyUsernameDuplicated(userInputValues.username)
+  userInputValues.password = await password.hash(userInputValues.password)
 
   const newUsers = insertUser(userInputValues)
   return newUsers
