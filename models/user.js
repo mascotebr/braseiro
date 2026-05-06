@@ -1,5 +1,6 @@
 import database from 'infra/database'
 import { NotFoundError, ValidatorError } from 'infra/errors'
+import password from 'models/password'
 
 async function findOneByUsername(username) {
   const newUsers = selectOneByUsername(username)
@@ -29,37 +30,9 @@ async function findOneByUsername(username) {
   }
 }
 
-async function create(userInputValues) {
-  await verifyEmailDuplicated(userInputValues.email)
-  await verifyUsernameDuplicated(userInputValues.username)
-
-  const newUsers = insertUser(userInputValues)
-  return newUsers
-
-  async function verifyEmailDuplicated(email) {
-    const result = await database.query({
-      text: `
-      SELECT
-        email 
-      FROM
-        users
-      WHERE
-        LOWER(email) = LOWER($1)
-      ;`,
-      values: [email],
-    })
-
-    if (result.rowCount > 0) {
-      throw new ValidatorError({
-        message: 'Email inválido.',
-        action: 'Tente novamente com outro email.',
-      })
-    }
-  }
-
-  async function verifyUsernameDuplicated(username) {
-    const result = await database.query({
-      text: `
+async function verifyUsernameDuplicated(username) {
+  const result = await database.query({
+    text: `
       SELECT
         username 
       FROM
@@ -67,16 +40,49 @@ async function create(userInputValues) {
       WHERE
         LOWER(username) = LOWER($1)
       ;`,
-      values: [username],
-    })
+    values: [username],
+  })
 
-    if (result.rowCount > 0) {
-      throw new ValidatorError({
-        message: 'Username inválido.',
-        action: 'Tente novamente com outro username.',
-      })
-    }
+  if (result.rowCount > 0) {
+    throw new ValidatorError({
+      message: 'O username informado já está sendo utilizado.',
+      action: 'Tente novamente com outro username.',
+    })
   }
+}
+
+async function verifyEmailDuplicated(email) {
+  const result = await database.query({
+    text: `
+      SELECT
+        email 
+      FROM
+        users
+      WHERE
+        LOWER(email) = LOWER($1)
+      ;`,
+    values: [email],
+  })
+
+  if (result.rowCount > 0) {
+    throw new ValidatorError({
+      message: 'O email informado já está sendo utilizado.',
+      action: 'Tente novamente com outro email.',
+    })
+  }
+}
+
+async function hashPasswordInObject(userInputValues) {
+  userInputValues.password = await password.hash(userInputValues.password)
+}
+
+async function create(userInputValues) {
+  await verifyUsernameDuplicated(userInputValues.username)
+  await verifyEmailDuplicated(userInputValues.email)
+  await hashPasswordInObject(userInputValues)
+
+  const newUsers = insertUser(userInputValues)
+  return newUsers
 
   async function insertUser(userInputValues) {
     const result = await database.query({
@@ -99,6 +105,51 @@ async function create(userInputValues) {
   }
 }
 
-const user = { create, findOneByUsername }
+async function update(username, userInputValues) {
+  const userInDB = await findOneByUsername(username)
+
+  if ('username' in userInputValues) {
+    await verifyUsernameDuplicated(userInputValues.username)
+  }
+
+  if ('email' in userInputValues) {
+    await verifyEmailDuplicated(userInputValues.email)
+  }
+
+  if ('password' in userInputValues) {
+    await hashPasswordInObject(userInputValues)
+  }
+
+  const userWithNewValues = { ...userInDB, ...userInputValues }
+  const userUpdated = await runUpdateQuery(userWithNewValues)
+  return userUpdated
+
+  async function runUpdateQuery(userValues) {
+    const result = await database.query({
+      text: `
+      UPDATE
+        users
+      SET
+        username = $2,
+        email = $3,
+        password = $4,
+        updated_at = timezone('utc',now())
+      WHERE
+        id = $1
+      RETURNING 
+        *
+      ;`,
+      values: [
+        userValues.id,
+        userValues.username,
+        userValues.email,
+        userValues.password,
+      ],
+    })
+
+    return result.rows[0]
+  }
+}
+const user = { create, findOneByUsername, update }
 
 export default user
