@@ -4,7 +4,7 @@ beforeAll(async () => {
   await orchastrador.clearDatabase()
   await orchastrador.runPendingMigrations()
 })
-describe('GET /api/v1/users', () => {
+describe('GET /api/v1/users/[username]', () => {
   describe('Anonymous user', () => {
     test('With exact case match', async () => {
       const response1 = await fetch('http://localhost:3000/api/v1/users', {

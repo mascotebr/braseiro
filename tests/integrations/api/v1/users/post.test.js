@@ -80,7 +80,7 @@ describe('POST /api/v1/users', () => {
 
       expect(responseBody2).toEqual({
         name: 'ValidatorError',
-        message: 'Email inválido.',
+        message: 'O email informado já está sendo utilizado.',
         action: 'Tente novamente com outro email.',
         status_code: 400,
       })
@@ -113,7 +113,7 @@ describe('POST /api/v1/users', () => {
 
       expect(responseBody2).toEqual({
         name: 'ValidatorError',
-        message: 'Username inválido.',
+        message: 'O username informado já está sendo utilizado.',
         action: 'Tente novamente com outro username.',
         status_code: 400,
       })
