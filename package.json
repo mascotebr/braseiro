@@ -21,6 +21,7 @@
   "author": "Mascotebr",
   "main": "pages/index.js",
   "dependencies": {
+    "@faker-js/faker": "9.7.0",
     "async-retry": "1.3.3",
     "bcryptjs": "3.0.2",
     "cloudinary": "2.8.0",
