@@ -29,6 +29,33 @@ async function findOneByUsername(username) {
     return result.rows[0]
   }
 }
+async function findOneByEmail(email) {
+  const newUsers = selectOneByEmail(email)
+  return newUsers
+
+  async function selectOneByEmail(email) {
+    const result = await database.query({
+      text: `
+      SELECT
+        * 
+      FROM
+        users
+      WHERE
+        email = $1
+      ;`,
+      values: [email],
+    })
+
+    if (result.rowCount == 0) {
+      throw new NotFoundError({
+        message: 'Usuário não encontrado.',
+        action: 'Tente novamente com outro email.',
+      })
+    }
+
+    return result.rows[0]
+  }
+}
 
 async function verifyUsernameDuplicated(username) {
   const result = await database.query({
@@ -150,6 +177,6 @@ async function update(username, userInputValues) {
     return result.rows[0]
   }
 }
-const user = { create, findOneByUsername, update }
+const user = { create, findOneByUsername, findOneByEmail, update }
 
 export default user
