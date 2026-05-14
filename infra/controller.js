@@ -2,16 +2,20 @@ import {
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
+  UnauthorizedError,
   ValidatorError,
 } from 'infra/errors'
 function onErrorHandler(error, req, res) {
-  if (error instanceof ValidatorError || error instanceof NotFoundError) {
+  if (
+    error instanceof ValidatorError ||
+    error instanceof NotFoundError ||
+    error instanceof UnauthorizedError
+  ) {
     return res.status(error.statusCode).json(error)
   }
 
   const errorObject = new InternalServerError({
     cause: error,
-    status: error.statusCode,
   })
   console.error(errorObject)
   res.status(errorObject.statusCode).json(errorObject)
