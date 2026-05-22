@@ -2,6 +2,34 @@ import database from 'infra/database'
 import { NotFoundError, ValidatorError } from 'infra/errors'
 import password from 'models/password'
 
+async function findOneById(id) {
+  const user = selectOneById(id)
+  return user
+
+  async function selectOneById(id) {
+    const result = await database.query({
+      text: `
+      SELECT
+        * 
+      FROM
+        users
+      WHERE
+        id = $1
+      ;`,
+      values: [id],
+    })
+
+    if (result.rowCount == 0) {
+      throw new NotFoundError({
+        message: 'Usuário não encontrado.',
+        action: 'Tente novamente com outro username.',
+      })
+    }
+
+    return result.rows[0]
+  }
+}
+
 async function findOneByUsername(username) {
   const newUsers = selectOneByUsername(username)
   return newUsers
@@ -177,6 +205,6 @@ async function update(username, userInputValues) {
     return result.rows[0]
   }
 }
-const user = { create, findOneByUsername, findOneByEmail, update }
+const user = { create, findOneById, findOneByUsername, findOneByEmail, update }
 
 export default user
