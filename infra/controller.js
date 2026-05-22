@@ -5,6 +5,9 @@ import {
   UnauthorizedError,
   ValidatorError,
 } from 'infra/errors'
+import * as cookie from 'cookie'
+import session from 'models/session'
+
 function onErrorHandler(error, req, res) {
   if (
     error instanceof ValidatorError ||
@@ -26,8 +29,19 @@ function onNoMatchHandler(req, res) {
   res.status(405).json(errorObject)
 }
 
+async function setSessionCookie(token, res) {
+  const setCookie = cookie.serialize('session_id', token, {
+    path: '/',
+    secure: process.env.NODE_ENV == 'production',
+    maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
+    httpOnly: true,
+  })
+
+  res.setHeader('Set-Cookie', setCookie)
+}
 const controller = {
   errorsHandlers: { onError: onErrorHandler, onNoMatch: onNoMatchHandler },
+  setSessionCookie,
 }
 
 export default controller
