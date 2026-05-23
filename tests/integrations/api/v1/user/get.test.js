@@ -48,6 +48,13 @@ describe('GET /api/v1/user', () => {
         true,
       )
 
+      //Cache-Control assertions
+
+      const cacheControl = response.headers.get('Cache-Control')
+      expect(cacheControl).toBe(
+        'no-store, no-cache, max-age=0, must-revalidate',
+      )
+
       //Set-Cookie assertions
 
       const parsedSetCookie = setCookieParse(response, {
