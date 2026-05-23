@@ -8,7 +8,7 @@ beforeAll(async () => {
   await orchastrador.clearDatabase()
   await orchastrador.runPendingMigrations()
 })
-describe('GET /api/v1/user', () => {
+describe('DELETE /api/v1/sessions', () => {
   describe('Default user', () => {
     test('With expired session', async () => {
       jest.useFakeTimers({
@@ -23,7 +23,8 @@ describe('GET /api/v1/user', () => {
 
       jest.useRealTimers()
 
-      const response = await fetch('http://localhost:3000/api/v1/user', {
+      const response = await fetch('http://localhost:3000/api/v1/sessions', {
+        method: 'DELETE',
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },
@@ -35,27 +36,14 @@ describe('GET /api/v1/user', () => {
         message: 'Usuário não possui sessão ativa.',
         action: 'Verifique se o usuário está logado e tente novamente.',
       })
-
-      //Set-Cookie assertions
-
-      const parsedSetCookie = setCookieParse(response, {
-        map: true,
-      })
-
-      expect(parsedSetCookie.session_id).toEqual({
-        name: 'session_id',
-        value: 'invalid',
-        maxAge: -1,
-        path: '/',
-        httpOnly: true,
-      })
     })
 
     test('With nonexitent session', async () => {
       const invalidToken =
         'bd971c7e59d76d9c42d0af4cb9113557184052eadaa1c14f95dc07ab08fc52b382e598a97e3f1cb7cf77cb6dfa0d5240'
 
-      const response = await fetch('http://localhost:3000/api/v1/user', {
+      const response = await fetch('http://localhost:3000/api/v1/sessions', {
+        method: 'DELETE',
         headers: {
           Cookie: `session_id=${invalidToken}`,
         },
@@ -68,6 +56,42 @@ describe('GET /api/v1/user', () => {
         message: 'Usuário não possui sessão ativa.',
         action: 'Verifique se o usuário está logado e tente novamente.',
       })
+    })
+
+    test('With valid session', async () => {
+      const userCreated = await orchastrador.createUser({
+        username: 'UserValidSession',
+      })
+
+      const sessionObject = await orchastrador.createSession(userCreated.id)
+
+      const response = await fetch('http://localhost:3000/api/v1/sessions', {
+        method: 'DELETE',
+        headers: {
+          Cookie: `session_id=${sessionObject.token}`,
+        },
+      })
+      const responseBody = await response.json()
+
+      expect(responseBody).toEqual({
+        id: sessionObject.id,
+        token: sessionObject.token,
+        user_id: sessionObject.user_id,
+        expired_at: responseBody.expired_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      })
+
+      expect(uuidVersion(responseBody.id)).toBe(4)
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN()
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN()
+
+      expect(
+        responseBody.updated_at > sessionObject.updated_at.toISOString(),
+      ).toBe(true)
+      expect(
+        responseBody.expired_at < sessionObject.expired_at.toISOString(),
+      ).toBe(true)
 
       //Set-Cookie assertions
 
@@ -82,65 +106,19 @@ describe('GET /api/v1/user', () => {
         path: '/',
         httpOnly: true,
       })
-    })
 
-    test('With valid session', async () => {
-      const userCreated = await orchastrador.createUser({
-        username: 'UserValidSession',
-      })
-
-      const sessionObject = await orchastrador.createSession(userCreated.id)
-
-      const response = await fetch('http://localhost:3000/api/v1/user', {
+      //Double-Check session
+      const response2 = await fetch('http://localhost:3000/api/v1/user', {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },
       })
-      const responseBody = await response.json()
-
-      expect(responseBody).toEqual({
-        id: responseBody.id,
-        username: 'UserValidSession',
-        email: responseBody.email,
-        password: responseBody.password,
-        created_at: responseBody.created_at,
-        updated_at: responseBody.updated_at,
-      })
-
-      expect(uuidVersion(responseBody.id)).toBe(4)
-      expect(Date.parse(responseBody.created_at)).not.toBeNaN()
-      expect(Date.parse(responseBody.updated_at)).not.toBeNaN()
-
-      //Session renewal assertions
-      const renewSessionObject = await session.findOneByValidToken(
-        sessionObject.token,
-      )
-      expect(renewSessionObject.updated_at > sessionObject.updated_at).toBe(
-        true,
-      )
-      expect(renewSessionObject.expired_at > sessionObject.expired_at).toBe(
-        true,
-      )
-
-      //Cache-Control assertions
-
-      const cacheControl = response.headers.get('Cache-Control')
-      expect(cacheControl).toBe(
-        'no-store, no-cache, max-age=0, must-revalidate',
-      )
-
-      //Set-Cookie assertions
-
-      const parsedSetCookie = setCookieParse(response, {
-        map: true,
-      })
-
-      expect(parsedSetCookie.session_id).toEqual({
-        name: 'session_id',
-        value: sessionObject.token,
-        maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
-        path: '/',
-        httpOnly: true,
+      const response2Body = await response2.json()
+      expect(response2Body).toEqual({
+        name: 'UnauthorizedError',
+        status_code: 401,
+        message: 'Usuário não possui sessão ativa.',
+        action: 'Verifique se o usuário está logado e tente novamente.',
       })
     })
   })
