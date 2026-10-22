@@ -12,8 +12,8 @@ async function postHandler(req, res) {
   const userInputValues = req.body
   const newUser = await user.create(userInputValues)
 
-  await activation.create()
-  await activation.sendEmailToUser(newUser)
+  const activationToken = await activation.create(newUser.id)
+  await activation.sendEmailToUser(newUser, activationToken)
 
   return res.status(201).json(newUser)
 }
