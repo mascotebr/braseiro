@@ -1,0 +1,85 @@
+import orchastrador from 'tests/orchastrador.js'
+import webserver from 'infra/webserver'
+import activation from 'models/activation'
+import user from 'models/user'
+beforeAll(async () => {
+  await orchastrador.waitForAllServices()
+  await orchastrador.clearDatabase()
+  await orchastrador.runPendingMigrations()
+  await orchastrador.deleteAllEmails()
+})
+
+describe('Use Case: Registration Flow (all successful)', () => {
+  let createUserResponseBody
+  let activationTokenId
+
+  test('Create user account', async () => {
+    const createUserResponse = await fetch(
+      'http://localhost:3000/api/v1/users',
+      {
+        method: 'POST',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({
+          username: 'RegistrationFlow',
+          email: 'registration.flow@braseiro.com.br',
+          password: 'Senha123',
+        }),
+      },
+    )
+
+    expect(createUserResponse.status).toBe(201)
+
+    createUserResponseBody = await createUserResponse.json()
+
+    expect(createUserResponseBody).toEqual({
+      id: createUserResponseBody.id,
+      username: 'RegistrationFlow',
+      email: 'registration.flow@braseiro.com.br',
+      password: createUserResponseBody.password,
+      features: ['read:activation_token'],
+      created_at: createUserResponseBody.created_at,
+      updated_at: createUserResponseBody.updated_at,
+    })
+  })
+
+  test('Receive activation email', async () => {
+    const lastEmail = await orchastrador.getLastEmail()
+
+    expect(lastEmail.sender).toBe('<contato@braseiro.com.br>')
+    expect(lastEmail.recipients[0]).toBe('<registration.flow@braseiro.com.br>')
+    expect(lastEmail.subject).toBe('Ative seu cadastro no Braseiro!')
+    expect(lastEmail.text).toContain('RegistrationFlow')
+
+    activationTokenId = orchastrador.extractUUID(lastEmail.text)
+
+    expect(lastEmail.text).toContain(
+      `${webserver.origin}/cadastro/ativar/${activationTokenId}`,
+    )
+
+    const activationTokenObject =
+      await activation.findOneValidById(activationTokenId)
+
+    expect(activationTokenObject.user_id).toBe(createUserResponseBody.id)
+    expect(activationTokenObject.used_at).toBe(null)
+  })
+
+  test('Activation account', async () => {
+    const response = await fetch(
+      `http://localhost:3000/api/v1/activations/${activationTokenId}`,
+      { method: 'PATCH' },
+    )
+
+    expect(response.status).toBe(200)
+
+    const activationResponseBody = await response.json()
+
+    expect(Date.parse(activationResponseBody.used_at)).not.toBeNaN()
+
+    const activatedUser = await user.findOneByUsername('RegistrationFlow')
+    expect(activatedUser.features).toEqual(['create:session'])
+  })
+
+  test('Login', async () => {})
+
+  test('Get user information', async () => {})
+})
