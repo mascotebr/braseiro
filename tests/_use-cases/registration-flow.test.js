@@ -1,6 +1,6 @@
-import activation from 'models/activation'
 import orchastrador from 'tests/orchastrador.js'
-
+import webserver from 'infra/webserver'
+import activation from 'models/activation'
 beforeAll(async () => {
   await orchastrador.waitForAllServices()
   await orchastrador.clearDatabase()
@@ -42,14 +42,22 @@ describe('Use Case: Registration Flow (all successful)', () => {
   test('Receive activation email', async () => {
     const lastEmail = await orchastrador.getLastEmail()
 
-    const activationToken = await activation.findOneByUserId(
-      createUserResponseBody.id,
-    )
     expect(lastEmail.sender).toBe('<contato@braseiro.com.br>')
     expect(lastEmail.recipients[0]).toBe('<registration.flow@braseiro.com.br>')
     expect(lastEmail.subject).toBe('Ative seu cadastro no Braseiro!')
     expect(lastEmail.text).toContain('RegistrationFlow')
-    expect(lastEmail.text).toContain(activationToken.id)
+
+    const activationTokenId = orchastrador.extractUUID(lastEmail.text)
+
+    expect(lastEmail.text).toContain(
+      `${webserver.origin}/cadastro/ativar/${activationTokenId}`,
+    )
+
+    const activationTokenObject =
+      await activation.findOneValidById(activationTokenId)
+
+    expect(activationTokenObject.user_id).toBe(createUserResponseBody.id)
+    expect(activationTokenObject.used_at).toBe(null)
   })
 
   test('Activation account', async () => {})
