@@ -70,10 +70,59 @@ Equipe Braseiro`,
   })
 }
 
+async function markTokenAsUsed(activationTokenId) {
+  const tokenUsed = await runUpdateQuery(activationTokenId)
+  return tokenUsed
+
+  async function runUpdateQuery(activationTokenId) {
+    const result = await database.query({
+      text: `
+        UPDATE 
+          user_activation_tokens
+        SET 
+          used_at = timezone('utc', now()),
+          updated_at = timezone('utc',now())
+        WHERE 
+          id = $1
+        RETURNING
+          *
+        ;`,
+      values: [activationTokenId],
+    })
+    return result.rows[0]
+  }
+}
+
+async function activateUserByUserId(userId) {
+  const activatedUser = await runUpdateQuery(userId)
+  return activatedUser
+
+  async function runUpdateQuery(userId) {
+    const features = ['create:session']
+    const result = await database.query({
+      text: `
+        UPDATE
+          users
+        SET
+          features = $1
+        WHERE 
+          id = $2
+        RETURNING
+          *
+        ;`,
+      values: [features, userId],
+    })
+
+    return result.rows[0]
+  }
+}
+
 const activation = {
   create,
   findOneValidById,
   sendEmailToUser,
+  markTokenAsUsed,
+  activateUserByUserId,
 }
 
 export default activation
