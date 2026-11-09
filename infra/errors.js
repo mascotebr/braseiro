@@ -98,6 +98,26 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export class ForbiddenError extends Error {
+  constructor({ message, cause, action }) {
+    super(message || 'Um erro de não autorizado ocorreu.', {
+      cause: cause,
+    })
+    this.name = 'ForbiddenError'
+    this.action = action || 'Você não tem permissão para realizar esta ação.'
+    this.statusCode = 403
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: this.statusCode,
+    }
+  }
+}
+
 export class MethodNotAllowedError extends Error {
   constructor() {
     super('Metodo não permitido por esse endpoint.')

@@ -21,7 +21,7 @@ describe('Use Case: Registration Flow (all successful)', () => {
         headers: { 'Content-type': 'application/json' },
         body: JSON.stringify({
           username: 'RegistrationFlow',
-          email: 'registration.flow@braseiro.com.br',
+          email: 'registration.flow@braseiro.art.br',
           password: 'Senha123',
         }),
       },
@@ -34,7 +34,7 @@ describe('Use Case: Registration Flow (all successful)', () => {
     expect(createUserResponseBody).toEqual({
       id: createUserResponseBody.id,
       username: 'RegistrationFlow',
-      email: 'registration.flow@braseiro.com.br',
+      email: 'registration.flow@braseiro.art.br',
       password: createUserResponseBody.password,
       features: ['read:activation_token'],
       created_at: createUserResponseBody.created_at,
@@ -46,7 +46,7 @@ describe('Use Case: Registration Flow (all successful)', () => {
     const lastEmail = await orchastrador.getLastEmail()
 
     expect(lastEmail.sender).toBe('<contato@braseiro.com.br>')
-    expect(lastEmail.recipients[0]).toBe('<registration.flow@braseiro.com.br>')
+    expect(lastEmail.recipients[0]).toBe('<registration.flow@braseiro.art.br>')
     expect(lastEmail.subject).toBe('Ative seu cadastro no Braseiro!')
     expect(lastEmail.text).toContain('RegistrationFlow')
 
@@ -79,7 +79,24 @@ describe('Use Case: Registration Flow (all successful)', () => {
     expect(activatedUser.features).toEqual(['create:session'])
   })
 
-  test('Login', async () => {})
+  test('Login', async () => {
+    const createSessionResponse = await fetch(
+      'http://localhost:3000/api/v1/sessions',
+      {
+        method: 'POST',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({
+          email: 'registration.flow@braseiro.art.br',
+          password: 'Senha123',
+        }),
+      },
+    )
+
+    expect(createSessionResponse.status).toBe(201)
+
+    const createSessionResponseBody = await createSessionResponse.json()
+    expect(createSessionResponseBody.user_id).toBe(createUserResponseBody.id)
+  })
 
   test('Get user information', async () => {})
 })
